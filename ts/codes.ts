@@ -1,8 +1,53 @@
+const start_window = <HTMLDivElement>document.querySelector('#start_window')
+start_window.querySelector('#start')?.addEventListener('click', event => {
+
+    (<HTMLButtonElement> event.target).disabled = true
+
+    console.log(start_window.querySelector(".border-right"))
+    start_window.querySelector(".border")?.animate(
+        [
+            {opacity: '1', transform: 'scale(1)'}, 
+            {opacity: '0', transform: 'scale(1.5)'}
+        ]
+        ,
+        { duration: 250, fill: 'both' }
+    )
+
+
+    start_window.querySelector(".subtitle")?.animate(
+        [
+            { opacity: '1', transform: 'translateX(0)'}, 
+            { opacity: '0', transform: 'translateX(-200%)'}
+        ],
+        { duration: 250, fill: 'both' }
+    )
+
+    start_window.querySelector(".title")?.animate(
+        [
+            { opacity: '1', transform: 'translateX(0)'}, 
+            { opacity: '0', transform: 'translateX(100%)'}
+        ],
+        { duration: 250, fill: 'both' }
+    )
+
+    start_window.animate(
+        [{ opacity: '1' }, { opacity: '0' }],
+        { duration: 500, fill: 'both', delay: 100 }
+    ).onfinish = () => {
+        start_window.style.display = 'none'
+    }
+
+
+    start()
+
+})
+
 const stop_window = <HTMLDivElement>document.querySelector('#stop_window')
 stop_window.querySelector('#stop')?.addEventListener('click', () => {
     window.close()
 })
 stop_window.querySelector('#replay')?.addEventListener('click', () => {
+    stop_window.style.display = 'none'
     Game.restart()
 })
 class Game {
@@ -14,17 +59,13 @@ class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D | null;
 
-    public static width = window.innerWidth - 100
-    public static height = window.innerHeight - 100
+    public static width = 1600
+    public static height = 900
 
     private constructor() {
 
         this.canvas = <HTMLCanvasElement> document.createElement('canvas')
         this.ctx = this.canvas.getContext('2d')
-
-        if(Game.width < 1000) {
-            alert("가로 모드로 변경하다.")
-        }
 
         this.canvas.width = Game.width
         this.canvas.height = Game.height        
@@ -39,7 +80,6 @@ class Game {
         this.game = new Game()
         this.isRunning = true
 
-        stop_window.style.display = 'none'
         start()
     }
 
@@ -76,11 +116,17 @@ class Game {
         this.getCtx()?.clearRect(0, 0, canvas.width, canvas.height)
     }
 
-    public static stop() {
+    public static stop(score: number) {
         this.isRunning = false
 
+        const title = stop_window.querySelector(".title")
+        if(title) title.textContent = score + "점"
 
         stop_window.style.display = 'flex'
+        stop_window.animate(
+            [{ opacity: '0' }, { opacity: '1' }],
+            { duration: 800, fill: 'both' }
+        )
     }
 }
 
@@ -95,9 +141,9 @@ class Obstacle {
 
     public x: number
     public y: number
-    private width: number
-    private height: number
-    private imagePath: string
+    public width: number
+    public height: number
+    public imagePath: string
 
     constructor(type: 0|1) {
         this.width = 375 / 4.5
@@ -121,6 +167,20 @@ class Obstacle {
         ctx.drawImage(image, this.x, this.y, this.width, this.height)
     }
 }
+
+class HorizontalObstacle extends Obstacle{
+
+    constructor() {
+        super(0)
+        this.width = 400 / 3
+        this.height = 275 / 3
+        this.x = Game.width
+        this.y = Game.height - this.height
+
+        this.imagePath = 'data/obstacle/3.png'
+    }
+}
+
 
 class Enha {
 
@@ -205,7 +265,8 @@ function start() {
     let timer = 0
     let speed = 10
 
-    let enhaShape: 0|1 = 0
+    let nextObTime = 1
+
     function update() {
         if(Game.isRunning) requestAnimationFrame(update)
     
@@ -224,7 +285,7 @@ function start() {
             
             obstacle.x -= speed
             if(enha.detectCollision(obstacle)) {
-                Game.stop()
+                Game.stop(score)
             }
             obstacle.draw()
         })
@@ -232,19 +293,27 @@ function start() {
 
         const ctx = Game.getCtx()
         if(ctx != null) {
-            ctx.font = "50px Arial";
-            ctx.fillStyle = "black";
+            ctx.font = 'bold 50px beaufort';
+
+            ctx.fillStyle = 'white';
             ctx.textAlign = 'center'
-            ctx.fillText(score + "점", Game.width /2, 70);
+            ctx.fillText(score + '점', Game.width /2, 70);
         }
     
         if(timer % (Game.fps * 0.25) == 0) {
             enha.nextImage()
         }
-        if(timer % (Game.fps * 1.2) == 0) {
-            obstacles.push(new Obstacle(enhaShape))
-            if(enhaShape == 0) enhaShape = 1
-            else enhaShape = 0
+
+
+        if(timer == nextObTime) {
+            const shape = Math.floor(Math.random() * 3)
+            if(shape == 0 || shape == 1) {
+                obstacles.push(new Obstacle(shape))
+            } else {
+                obstacles.push(new HorizontalObstacle())
+            }
+
+            nextObTime += Game.fps * 0.6 + Math.floor(Math.random() * Game.fps)
         } 
     }
     update()
@@ -253,14 +322,6 @@ function start() {
 document.addEventListener('keydown', event => {
     if(event.code == 'Space') {
         enha.startJump()
-    } else if(event.code == 'KeyQ') {
-        
-    } else if(event.code == 'KeyW') {
-        
-    } else if(event.code == 'KeyE') {
-        
-    } else if(event.code == 'KeyR') {
-        
     }
 })
 
@@ -268,4 +329,6 @@ document.addEventListener('touchend', () => {
     enha.startJump()
 })
 
-start()
+document.addEventListener('click', () => {
+    enha.startJump()
+})

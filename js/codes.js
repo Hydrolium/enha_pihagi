@@ -1,3 +1,16 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
@@ -25,21 +38,41 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _a, _b;
+var _a, _b, _c;
+var start_window = document.querySelector('#start_window');
+(_a = start_window.querySelector('#start')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function (event) {
+    var _a, _b, _c;
+    event.target.disabled = true;
+    console.log(start_window.querySelector(".border-right"));
+    (_a = start_window.querySelector(".border")) === null || _a === void 0 ? void 0 : _a.animate([
+        { opacity: '1', transform: 'scale(1)' },
+        { opacity: '0', transform: 'scale(1.5)' }
+    ], { duration: 250, fill: 'both' });
+    (_b = start_window.querySelector(".subtitle")) === null || _b === void 0 ? void 0 : _b.animate([
+        { opacity: '1', transform: 'translateX(0)' },
+        { opacity: '0', transform: 'translateX(-200%)' }
+    ], { duration: 250, fill: 'both' });
+    (_c = start_window.querySelector(".title")) === null || _c === void 0 ? void 0 : _c.animate([
+        { opacity: '1', transform: 'translateX(0)' },
+        { opacity: '0', transform: 'translateX(100%)' }
+    ], { duration: 250, fill: 'both' });
+    start_window.animate([{ opacity: '1' }, { opacity: '0' }], { duration: 500, fill: 'both', delay: 100 }).onfinish = function () {
+        start_window.style.display = 'none';
+    };
+    start();
+});
 var stop_window = document.querySelector('#stop_window');
-(_a = stop_window.querySelector('#stop')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
+(_b = stop_window.querySelector('#stop')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
     window.close();
 });
-(_b = stop_window.querySelector('#replay')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', function () {
+(_c = stop_window.querySelector('#replay')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
+    stop_window.style.display = 'none';
     Game.restart();
 });
 var Game = /** @class */ (function () {
     function Game() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
-        if (Game.width < 1000) {
-            alert("가로 모드로 변경하다.");
-        }
         this.canvas.width = Game.width;
         this.canvas.height = Game.height;
         this.canvas.id = 'canvas';
@@ -49,7 +82,6 @@ var Game = /** @class */ (function () {
         document.body.removeChild(this.getCanvas());
         this.game = new Game();
         this.isRunning = true;
-        stop_window.style.display = 'none';
         start();
     };
     Game.canGoToNextFrame = function () {
@@ -77,14 +109,18 @@ var Game = /** @class */ (function () {
         var canvas = this.getCanvas();
         (_a = this.getCtx()) === null || _a === void 0 ? void 0 : _a.clearRect(0, 0, canvas.width, canvas.height);
     };
-    Game.stop = function () {
+    Game.stop = function (score) {
         this.isRunning = false;
+        var title = stop_window.querySelector(".title");
+        if (title)
+            title.textContent = score + "점";
         stop_window.style.display = 'flex';
+        stop_window.animate([{ opacity: '0' }, { opacity: '1' }], { duration: 800, fill: 'both' });
     };
     Game.isRunning = true;
     Game.game = null;
-    Game.width = window.innerWidth - 100;
-    Game.height = window.innerHeight - 100;
+    Game.width = 1600;
+    Game.height = 900;
     Game.fps = 60;
     Game.interval = 1000 / 60;
     Game.then = Date.now();
@@ -115,6 +151,19 @@ var Obstacle = /** @class */ (function () {
     ];
     return Obstacle;
 }());
+var HorizontalObstacle = /** @class */ (function (_super) {
+    __extends(HorizontalObstacle, _super);
+    function HorizontalObstacle() {
+        var _this = _super.call(this, 0) || this;
+        _this.width = 400 / 3;
+        _this.height = 275 / 3;
+        _this.x = Game.width;
+        _this.y = Game.height - _this.height;
+        _this.imagePath = 'data/obstacle/3.png';
+        return _this;
+    }
+    return HorizontalObstacle;
+}(Obstacle));
 var Enha = /** @class */ (function () {
     function Enha() {
         this.width = 150;
@@ -197,7 +246,7 @@ function start() {
     var score = 0;
     var timer = 0;
     var speed = 10;
-    var enhaShape = 0;
+    var nextObTime = 1;
     function update() {
         if (Game.isRunning)
             requestAnimationFrame(update);
@@ -215,26 +264,29 @@ function start() {
             }
             obstacle.x -= speed;
             if (enha.detectCollision(obstacle)) {
-                Game.stop();
+                Game.stop(score);
             }
             obstacle.draw();
         });
         var ctx = Game.getCtx();
         if (ctx != null) {
-            ctx.font = "50px Arial";
-            ctx.fillStyle = "black";
+            ctx.font = 'bold 50px beaufort';
+            ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
-            ctx.fillText(score + "점", Game.width / 2, 70);
+            ctx.fillText(score + '점', Game.width / 2, 70);
         }
         if (timer % (Game.fps * 0.25) == 0) {
             enha.nextImage();
         }
-        if (timer % (Game.fps * 1.2) == 0) {
-            obstacles.push(new Obstacle(enhaShape));
-            if (enhaShape == 0)
-                enhaShape = 1;
-            else
-                enhaShape = 0;
+        if (timer == nextObTime) {
+            var shape = Math.floor(Math.random() * 3);
+            if (shape == 0 || shape == 1) {
+                obstacles.push(new Obstacle(shape));
+            }
+            else {
+                obstacles.push(new HorizontalObstacle());
+            }
+            nextObTime += Game.fps * 0.6 + Math.floor(Math.random() * Game.fps);
         }
     }
     update();
@@ -243,16 +295,10 @@ document.addEventListener('keydown', function (event) {
     if (event.code == 'Space') {
         enha.startJump();
     }
-    else if (event.code == 'KeyQ') {
-    }
-    else if (event.code == 'KeyW') {
-    }
-    else if (event.code == 'KeyE') {
-    }
-    else if (event.code == 'KeyR') {
-    }
 });
 document.addEventListener('touchend', function () {
     enha.startJump();
 });
-start();
+document.addEventListener('click', function () {
+    enha.startJump();
+});

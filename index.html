@@ -8,17 +8,44 @@
     <link type="image/x-icon" rel="shortcut icon" href="HERE ICON LINK">
     <link rel="stylesheet" href="css.css">
 
-    <title>김은하를 구해줘!</title>
+    <title>갤럭시런</title>
     <script src="js/codes.js" defer></script>
 
 </head>
 <body>
 
-    <div class="stop-window" id="stop_window">
-        <p>아쉬운!</p>
+    <div class="modal-window" id="start_window" style="display: flex;">
+
+        
+        <div class="title-box">
+            <p class="subtitle">Save the Galaxy</p>
+            <p class="title">은하를 살려라</p>
+
+            <img class="underline" src="data/ui/underline.png">
+        </div>
+
         <div class="button-box">
-            <button id="stop">그만하다</button>
-            <button id="replay">다시하다</button>
+            <button id="start">Click to start</button>
+        </div>
+
+        <div class="border">
+            <div class="border-right"></div>
+            <div class="border-left"></div>
+            <div class="border-top"></div>
+            <div class="border-bottom"></div>
+        </div>
+    </div>
+
+    <div class="modal-window" id="stop_window">
+        <div class="title-box">
+            <p class="subtitle">The End</p>
+            <p class="title">0점</p>
+
+            <img class="underline" src="data/ui/underline.png">
+        </div>
+        <div class="button-box">
+            <button id="stop">종료하기</button>
+            <button id="replay">다시하기</button>
         </div>
     </div>
     
