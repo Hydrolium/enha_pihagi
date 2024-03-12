@@ -69,12 +69,19 @@ var stop_window = document.querySelector('#stop_window');
     stop_window.style.display = 'none';
     Game.restart();
 });
+if (window.innerWidth < 900) {
+    start_window.style.transform = 'rotate(90deg)';
+    stop_window.style.transform = 'rotate(90deg)';
+}
 var Game = /** @class */ (function () {
     function Game() {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = Game.width;
         this.canvas.height = Game.height;
+        if (window.innerWidth < 900) {
+            this.canvas.style.transform = 'rotate(90deg)';
+        }
         this.canvas.id = 'canvas';
         document.body.appendChild(this.canvas);
     }

@@ -50,6 +50,11 @@ stop_window.querySelector('#replay')?.addEventListener('click', () => {
     stop_window.style.display = 'none'
     Game.restart()
 })
+
+if(window.innerWidth < 900) {
+    start_window.style.transform = 'rotate(90deg)'
+    stop_window.style.transform = 'rotate(90deg)'
+}
 class Game {
 
     public static isRunning = true
@@ -68,11 +73,16 @@ class Game {
         this.ctx = this.canvas.getContext('2d')
 
         this.canvas.width = Game.width
-        this.canvas.height = Game.height        
+        this.canvas.height = Game.height  
+     
+        if(window.innerWidth < 900) {
+            this.canvas.style.transform = 'rotate(90deg)'
+        }
 
         this.canvas.id = 'canvas'
 
         document.body.appendChild(this.canvas)
+
     }
 
     public static restart() {
